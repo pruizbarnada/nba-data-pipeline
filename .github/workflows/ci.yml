@@ -1,0 +1,24 @@
+name: ci                          # name shown in GitHub's Checks tab
+on:                               # triggers: when should this run?
+  pull_request:                   #   whenever a pull request is opened or updated
+  push:
+    branches: [main]              #   and whenever something lands on main
+jobs:
+  test:                           # a job called "test" (the name branch protection will refer to)
+    runs-on: ubuntu-latest        # a fresh temporary Ubuntu virtual machine
+    steps:                        # run in order; if one fails, the rest stop
+      - uses: actions/checkout@v4          # download your repo onto the machine
+      - uses: actions/setup-python@v5      # install Python
+        with:
+          python-version: '3.11'           # which version (you use 3.12 locally; 3.12 is fine too)
+          cache: pip                       # reuse downloaded packages between runs, for speed
+      - run: pip install -r requirements.txt   # install your dependencies
+      - name: Python unit tests
+        run: pytest                        # runs tests\test_ingest.py (pytest.ini limits it to tests\)
+      - name: Load fixture data
+        run: python scripts/load_fixture.py    # build raw.game_log and raw.teams from the CSVs
+      - name: dbt build (seed, run, test)
+        working-directory: dbt/nba             # like cd dbt/nba
+        run: |                                 # "|" = multiple lines, run in order
+          dbt deps                             # download dbt_utils
+          dbt build --profiles-dir .           # seed + all models + all tests
