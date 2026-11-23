@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: int_games_cleaned
+    description: >
+      Cleaned game log. Unfinished games are removed and duplicates are
+      deduplicated, keeping the latest load. Grain: one row per team per game.
+    columns:
+      - name: game_id
+        description: NBA game identifier.
+      - name: team_id
+        description: NBA team identifier.
+      - name: season
+        description: Season label such as 2025-26, derived from season_id.
+      - name: is_home
+        description: True when the team played at home, derived from the matchup text.
+      - name: is_win
+        description: True when the team won the game.
+      - name: points
+        description: Points scored by the team.
+      - name: points_against
+        description: Points scored by the opponent (points minus plus_minus).
+
+  - name: int_teams_cleaned
+    description: Deduplicated team reference data, one row per team.
+    columns:
+      - name: team_id
+        description: NBA team identifier.
+      - name: team_abbreviation
+        description: Three-letter team code.

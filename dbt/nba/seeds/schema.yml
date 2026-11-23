@@ -1,0 +1,11 @@
+version: 2
+
+seeds:
+  - name: team_conference
+    columns:
+      - name: team_abbreviation
+        data_tests: [unique, not_null]
+      - name: conference
+        data_tests:
+          - accepted_values:
+              values: ['East', 'West']

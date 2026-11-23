@@ -1,0 +1,6 @@
+duckdb
+pandas
+nba_api
+dbt-duckdb
+streamlit
+pytest

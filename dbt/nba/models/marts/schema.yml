@@ -1,0 +1,76 @@
+version: 2
+
+models:
+  - name: dim_team
+    description: One row per NBA team, enriched with conference and division from the seed.
+    columns:
+      - name: team_id
+        description: NBA team identifier (primary key).
+        data_tests: [unique, not_null]
+      - name: team_abbreviation
+        description: Three-letter team code.
+        data_tests: [unique, not_null]
+      - name: city
+        description: Team city.
+      - name: conference
+        description: East or West, from the team_conference seed.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['East', 'West']
+      - name: division
+        description: Division within the conference, from the team_conference seed.
+
+  - name: fct_game
+    description: 'Grain: one row per team per finished game.'
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [game_id, team_id]
+    columns:
+      - name: game_id
+        description: NBA game identifier. Each game appears twice, once per team.
+        data_tests: [not_null]
+      - name: team_id
+        description: Foreign key to dim_team.
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_team')
+              field: team_id
+      - name: points
+        description: Points scored by the team.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 200
+
+  - name: team_season_stats
+    description: 'Grain: one row per team, with games played, wins and win percentage.'
+    columns:
+      - name: team_id
+        description: Foreign key to dim_team.
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              to: ref('dim_team')
+              field: team_id
+      - name: games_played
+        description: Number of finished games.
+        data_tests:
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 82
+      - name: wins
+        description: Number of games won.
+        data_tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 82
+      - name: win_pct
+        description: Wins divided by games played.
+        data_tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 1
